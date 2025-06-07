@@ -1,25 +1,41 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useWeather } from '../hooks/useWeather';
-import LocationSearch from '../components/LocationSearch';
-import CurrentWeather from '../components/CurrentWeather';
-import ForecastCard from '../components/ForecastCard';
-import HourlyForecast from '../components/HourlyForecast';
-import WeatherMap from '../components/WeatherMap';
+import WeatherHero from '../components/WeatherHero';
+import MainWeatherCard from '../components/MainWeatherCard';
+import WeatherDetailCards from '../components/WeatherDetailCards';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { weatherData, loading, error, fetchWeather, searchLocation } = useWeather();
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleLocationSelect = async (location: string) => {
-    console.log('Selected location:', location);
-    try {
-      await fetchWeather(location);
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
       toast({
-        title: "Weather Updated",
-        description: `Showing weather for ${location}`,
+        title: "Error",
+        description: "Please enter a location to search",
+        variant: "destructive",
       });
+      return;
+    }
+
+    try {
+      const locations = await searchLocation(searchQuery);
+      if (locations.length > 0) {
+        await fetchWeather(locations[0].lat, locations[0].lon);
+        toast({
+          title: "Weather Updated",
+          description: `Showing weather for ${locations[0].name}`,
+        });
+      } else {
+        toast({
+          title: "Location Not Found",
+          description: "Please try a different location",
+          variant: "destructive",
+        });
+      }
     } catch (err) {
       toast({
         title: "Error",
@@ -29,109 +45,45 @@ const Index = () => {
     }
   };
 
-  const getBackgroundGradient = () => {
-    if (!weatherData?.current) {
-      return 'from-blue-600 via-purple-600 to-blue-800';
-    }
+  if (loading && !weatherData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading weather data...</p>
+        </div>
+      </div>
+    );
+  }
 
-    const condition = weatherData.current.condition.text.toLowerCase();
-    const isDay = weatherData.current.is_day === 1;
-
-    if (condition.includes('sunny') && isDay) {
-      return 'from-yellow-400 via-orange-500 to-pink-500';
-    } else if (condition.includes('rain')) {
-      return 'from-gray-600 via-blue-600 to-gray-800';
-    } else if (condition.includes('cloud')) {
-      return 'from-gray-400 via-blue-500 to-gray-600';
-    } else if (!isDay) {
-      return 'from-purple-900 via-blue-900 to-black';
-    }
-    
-    return 'from-blue-600 via-purple-600 to-blue-800';
-  };
+  if (error && !weatherData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-red-600">
+          <p className="text-lg mb-4">{error}</p>
+          <p className="text-sm">Using demo data for preview</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getBackgroundGradient()} transition-all duration-1000`}>
-      <div className="container mx-auto px-4 py-8">
-        {/* Header with Search */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Advanced Weather App
-          </h1>
-          <LocationSearch 
-            onLocationSelect={handleLocationSelect}
-            onSearch={searchLocation}
-          />
-        </div>
-
-        {loading && (
-          <div className="text-center text-white text-xl">
-            <div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full mx-auto mb-4"></div>
-            Loading weather data...
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center text-red-300 text-lg mb-8">
-            {error}
-          </div>
-        )}
-
-        {weatherData && !loading && (
-          <div className="space-y-8">
-            {/* Current Weather */}
-            <CurrentWeather data={weatherData} />
-
-            {/* 7-Day Forecast */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-white text-center opacity-90">
-                7-Day Forecast
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                {weatherData.forecast.forecastday.map((day: any, index: number) => (
-                  <ForecastCard 
-                    key={day.date} 
-                    day={day} 
-                    isToday={index === 0} 
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Hourly Forecast and Weather Map */}
-            <div className="grid lg:grid-cols-2 gap-8">
-              <HourlyForecast hourlyData={weatherData.forecast.forecastday[0].hour} />
-              <WeatherMap location={weatherData.location} />
-            </div>
-
-            {/* Additional Weather Details */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white text-center">
-                <h3 className="text-lg font-semibold mb-2 opacity-90">Visibility</h3>
-                <div className="text-3xl font-bold">{weatherData.current.vis_km} km</div>
-                <p className="text-sm opacity-75 mt-2">Clear visibility</p>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white text-center">
-                <h3 className="text-lg font-semibold mb-2 opacity-90">Wind Direction</h3>
-                <div className="text-3xl font-bold">{weatherData.current.wind_dir}</div>
-                <p className="text-sm opacity-75 mt-2">{weatherData.current.wind_degree}°</p>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white text-center">
-                <h3 className="text-lg font-semibold mb-2 opacity-90">Precipitation</h3>
-                <div className="text-3xl font-bold">{weatherData.current.precip_mm} mm</div>
-                <p className="text-sm opacity-75 mt-2">Last hour</p>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white text-center">
-                <h3 className="text-lg font-semibold mb-2 opacity-90">Cloud Cover</h3>
-                <div className="text-3xl font-bold">{weatherData.current.cloud}%</div>
-                <p className="text-sm opacity-75 mt-2">Sky coverage</p>
-              </div>
-            </div>
-          </div>
-        )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <WeatherHero weatherData={weatherData} />
+      
+      {/* Main Content */}
+      <div className="px-4 pb-8">
+        {/* Main Weather Card */}
+        <MainWeatherCard 
+          weatherData={weatherData}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onSearch={handleSearch}
+        />
+        
+        {/* Weather Detail Cards */}
+        <WeatherDetailCards weatherData={weatherData} />
       </div>
     </div>
   );

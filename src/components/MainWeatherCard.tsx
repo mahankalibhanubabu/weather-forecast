@@ -1,0 +1,103 @@
+
+import React from 'react';
+import { Cloud, Sun } from 'lucide-react';
+
+interface MainWeatherCardProps {
+  weatherData: any;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  onSearch: () => void;
+}
+
+const MainWeatherCard: React.FC<MainWeatherCardProps> = ({ 
+  weatherData, 
+  searchQuery, 
+  onSearchChange, 
+  onSearch 
+}) => {
+  if (!weatherData) return null;
+
+  const getWeatherIcon = (iconCode: string) => {
+    if (iconCode?.includes('01') || iconCode?.includes('02')) {
+      return <Sun className="w-16 h-16 text-yellow-400" />;
+    }
+    return <Cloud className="w-16 h-16 text-blue-300" />;
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto -mt-16 relative z-20">
+      {/* Search Section */}
+      <div className="mb-8">
+        <div className="relative max-w-md">
+          <input
+            type="text"
+            placeholder="State Name"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && onSearch()}
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            onClick={onSearch}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Weather Display */}
+      <div className="grid md:grid-cols-2 gap-8 items-center">
+        {/* Weather Info */}
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+            {weatherData.location?.name || 'Current Location'}
+          </h2>
+          <div className="flex items-center mb-4">
+            <span className="text-6xl font-light text-gray-800 mr-4">
+              {Math.round(weatherData.current?.temp || 0)}°
+            </span>
+            <div className="text-sm text-gray-600">
+              <div>({new Date().getFullYear()})</div>
+              <div className="mt-1">Temperature</div>
+            </div>
+          </div>
+          <p className="text-gray-600 mb-2">
+            {weatherData.current?.weather?.[0]?.description || 'Clear sky'}
+          </p>
+          <p className="text-sm text-gray-500">
+            Feels like {Math.round(weatherData.current?.feels_like || 0)}°
+          </p>
+        </div>
+
+        {/* Weather Icon & Actions */}
+        <div className="text-center">
+          <div className="mb-6">
+            {weatherData.current?.weather?.[0]?.icon ? (
+              <img
+                src={`https://openweathermap.org/img/wn/${weatherData.current.weather[0].icon}@4x.png`}
+                alt={weatherData.current.weather[0].description}
+                className="w-32 h-32 mx-auto"
+              />
+            ) : (
+              getWeatherIcon('01d')
+            )}
+          </div>
+          
+          <div className="flex justify-center space-x-4">
+            <button className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              Current
+            </button>
+            <button className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+              Forecast
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MainWeatherCard;

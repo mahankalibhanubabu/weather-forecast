@@ -1,18 +1,18 @@
 
 import { useState, useEffect } from 'react';
-import { getWeatherData, searchLocations } from '../services/weatherApi';
+import { getWeatherData, searchLocations, LocationResult } from '../services/weatherApi';
 
 export const useWeather = () => {
   const [weatherData, setWeatherData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWeather = async (location: string) => {
+  const fetchWeather = async (lat: number, lon: number) => {
     setLoading(true);
     setError(null);
     
     try {
-      const data = await getWeatherData(location);
+      const data = await getWeatherData(lat, lon);
       setWeatherData(data);
     } catch (err) {
       setError('Failed to fetch weather data');
@@ -22,7 +22,7 @@ export const useWeather = () => {
     }
   };
 
-  const searchLocation = async (query: string) => {
+  const searchLocation = async (query: string): Promise<LocationResult[]> => {
     try {
       return await searchLocations(query);
     } catch (err) {
@@ -33,7 +33,7 @@ export const useWeather = () => {
 
   // Load default weather data for London on component mount
   useEffect(() => {
-    fetchWeather('London');
+    fetchWeather(51.5074, -0.1278); // London coordinates
   }, []);
 
   return {

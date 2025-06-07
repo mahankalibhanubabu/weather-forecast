@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { getWeatherData, searchLocations, LocationResult } from '../services/weatherApi';
+import { getWeatherData, searchLocations, LocationResult, getAvailableStates, getCitiesByState } from '../services/weatherApi';
 
 export const useWeather = () => {
   const [weatherData, setWeatherData] = useState<any>(null);
@@ -14,6 +14,7 @@ export const useWeather = () => {
     try {
       const data = await getWeatherData(lat, lon);
       setWeatherData(data);
+      console.log('Weather data fetched:', data);
     } catch (err) {
       setError('Failed to fetch weather data');
       console.error('Weather fetch error:', err);
@@ -31,9 +32,17 @@ export const useWeather = () => {
     }
   };
 
-  // Load default weather data for London on component mount
+  const getStates = () => {
+    return getAvailableStates();
+  };
+
+  const getCitiesForState = (state: string) => {
+    return getCitiesByState(state);
+  };
+
+  // Load default weather data for Hyderabad on component mount
   useEffect(() => {
-    fetchWeather(51.5074, -0.1278); // London coordinates
+    fetchWeather(17.3850, 78.4867); // Hyderabad coordinates
   }, []);
 
   return {
@@ -41,6 +50,8 @@ export const useWeather = () => {
     loading,
     error,
     fetchWeather,
-    searchLocation
+    searchLocation,
+    getStates,
+    getCitiesForState
   };
 };

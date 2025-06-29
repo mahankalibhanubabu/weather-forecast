@@ -9,7 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      weather_data: {
+        Row: {
+          city: string
+          condition: string
+          created_at: string
+          description: string | null
+          humidity_percent: number | null
+          icon_code: string | null
+          id: string
+          last_updated: string
+          latitude: number
+          longitude: number
+          state: string
+          temperature_celsius: number
+          wind_direction: string | null
+          wind_speed_kmph: number | null
+        }
+        Insert: {
+          city: string
+          condition: string
+          created_at?: string
+          description?: string | null
+          humidity_percent?: number | null
+          icon_code?: string | null
+          id?: string
+          last_updated?: string
+          latitude: number
+          longitude: number
+          state: string
+          temperature_celsius: number
+          wind_direction?: string | null
+          wind_speed_kmph?: number | null
+        }
+        Update: {
+          city?: string
+          condition?: string
+          created_at?: string
+          description?: string | null
+          humidity_percent?: number | null
+          icon_code?: string | null
+          id?: string
+          last_updated?: string
+          latitude?: number
+          longitude?: number
+          state?: string
+          temperature_celsius?: number
+          wind_direction?: string | null
+          wind_speed_kmph?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

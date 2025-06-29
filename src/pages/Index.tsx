@@ -4,6 +4,7 @@ import { useRealtimeWeather } from '../hooks/useRealtimeWeather';
 import WeatherHero from '../components/WeatherHero';
 import MainWeatherCard from '../components/MainWeatherCard';
 import WeatherDetailCards from '../components/WeatherDetailCards';
+import WeatherRefreshButton from '../components/WeatherRefreshButton';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -120,9 +121,12 @@ const Index = () => {
               }
             </span>
           </div>
-          <span className="text-green-600 text-xs">
-            {weatherData.length} cities tracked
-          </span>
+          <div className="flex items-center space-x-4">
+            <span className="text-green-600 text-xs">
+              {weatherData.length} cities tracked
+            </span>
+            <WeatherRefreshButton />
+          </div>
         </div>
       </div>
 
